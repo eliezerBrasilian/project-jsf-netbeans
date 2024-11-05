@@ -1,11 +1,15 @@
 package _jpa;
 
 import static _jpa.JpaUtil.getSession;
+import _jpa.exceptions.EntityNotFoundException;
 import _jpa.exceptions.PerformEntityOperationException;
 import java.io.Serializable;
+import java.util.List;
+import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.JDBCException;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 /**
  * A GenericDao is an abstract class that provides basic CRUD operations for a
@@ -91,11 +95,17 @@ public abstract class GenericDao<T> {
                 throw new PerformEntityOperationException("Erro ao fechar operação de atualizar. \n" + e.getMessage());
             }
         }
-        
-        
+
     }
-    
-     public T findById(Serializable id) throws PerformEntityOperationException {
+
+    /**
+     * Finds an entity by its ID.
+     *
+     * @param id the id of the entity to be found.
+     * @return the found entity or null if not found
+     * @throws PerformEntityOperationException
+     */
+    public T findById(Serializable id) throws PerformEntityOperationException {
         Session session = getSession();
 
         try {
@@ -114,6 +124,92 @@ public abstract class GenericDao<T> {
             } catch (HibernateException e) {
                 throw new PerformEntityOperationException("Erro ao fechar operação de busca por ID. \n" + e.getMessage());
             }
+        }
     }
-  }
+
+    /**
+     * Retrives all entities of the specified type from the database
+     *
+     * @return a list of all rows
+     */
+    public List<T> findAll() {
+        Session session = getSession();
+
+        session.beginTransaction();
+
+        Criteria query = session.createCriteria(entityClass);
+        List<T> list = query.list();
+
+        session.getTransaction().commit();
+        return list;
+    }
+
+    /**
+     *
+     * @param id of entity to be deleted
+     * @throws EntityNotFoundException if an entity with provided ID was not
+     * founded
+     */
+    public void deleteById(Serializable id) throws EntityNotFoundException {
+        Session session = getSession();
+        Transaction transation = session.beginTransaction();
+
+        try {
+
+            T entity = (T) session.get(entityClass, id);
+
+            if (entity == null) {
+                throw new PerformEntityOperationException("Entity with ID " + id + " not found");
+            }
+
+            session.delete(entity);
+            transation.commit();
+
+        } catch (HibernateException e) {
+            transation.rollback();
+            e.printStackTrace();
+            throw new PerformEntityOperationException("Error deleting entity by ID: " + e.getMessage());
+        } finally {
+            try {
+                if (session.isOpen()) {
+                    session.close();
+                }
+            } catch (HibernateException e) {
+                throw new PerformEntityOperationException("Error closing session after delete operation: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Delete all rows of the specified entity from the database
+     * @throws PerformEntityOperationException if an error occurrs while trying to delete all rows.
+     * 
+     */
+    public void deleteAll() throws PerformEntityOperationException {
+        Session session = getSession();
+        Transaction transation = session.beginTransaction();
+
+        try {
+
+            String hql = "DELETE FROM " + entityClass.getName();
+            session.createQuery(hql)
+                    .executeUpdate();
+
+            transation.commit();
+
+        } catch (HibernateException e) {
+            transation.rollback();
+            e.printStackTrace();
+            throw new PerformEntityOperationException("Error deleting all entities: " + e.getMessage());
+        } finally {
+            try {
+                if (session.isOpen()) {
+                    session.close();
+                }
+            } catch (HibernateException e) {
+                throw new PerformEntityOperationException("Error closing session after delete operation: " + e.getMessage());
+            }
+        }
+    }
+
 }

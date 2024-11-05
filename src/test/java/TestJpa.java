@@ -1,6 +1,7 @@
 
 import app.entities.UserEntity;
 import app.repositories.UserRepository;
+import java.util.List;
 import org.junit.*;
 
 public class TestJpa {
@@ -20,7 +21,7 @@ public class TestJpa {
         }
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void findById() {
         UserRepository userRepository = new UserRepository();
@@ -28,6 +29,20 @@ public class TestJpa {
         try{
             UserEntity user = userRepository.findById(2L);
              System.out.println("nome do usuario encontrado: " + user.getName());
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    //@Ignore
+    @Test
+    public void findAll() {
+        UserRepository userRepository = new UserRepository();
+
+        try{
+             List<UserEntity> list = userRepository.findAll();
+             list.forEach(i->System.out.println("name: " + i.getName() + ", id: " + i.getId()));
+             
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -42,4 +57,32 @@ public class TestJpa {
 
         userRepository.update(user);
     }
+    
+    //@Ignore
+    @Test
+    public void deleteById() {
+        UserRepository userRepository = new UserRepository();
+
+        try{
+             userRepository.deleteById(1L);
+             System.out.println("deleted successfully");
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    //@Ignore
+    @Test
+    public void deleteAll() {
+        UserRepository userRepository = new UserRepository();
+
+        try{
+            userRepository.deleteAll();
+            System.out.println("deleted all rows successfully");
+             
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    
 }
