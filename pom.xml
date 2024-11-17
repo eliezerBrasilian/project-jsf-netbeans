@@ -180,11 +180,10 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.36</version>
         </dependency>
-        
-          <dependency>
-            <groupId>jpa</groupId>
-            <artifactId>generic_jpa</artifactId>
-            <version>0.0.2</version>
+        <dependency>
+            <groupId>generic-jpa</groupId>
+            <artifactId>generic_jpa-0.0.3</artifactId>
+            <version>0.0.3</version>
         </dependency>
     </dependencies>
     
